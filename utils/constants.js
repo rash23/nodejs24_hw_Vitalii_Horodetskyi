@@ -8,7 +8,7 @@ const COLOR_MAP = {
 };
 
 // Define log level priority
-const LOG_LEVEL_PRIORITY = {
+const LOG_PRIORITY = {
   info: 1,
   warn: 2,
   error: 3,
@@ -16,5 +16,5 @@ const LOG_LEVEL_PRIORITY = {
 
 module.exports = {
   COLOR_MAP,
-  LOG_LEVEL_PRIORITY,
+  LOG_PRIORITY,
 };
