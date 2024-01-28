@@ -1,40 +1,33 @@
 const colors = require('colors/safe');
 const config = require('config');
+const { COLOR_MAP, LOG_PRIORITY } = require('./constants');
 
 // Reading environment variable values
 const COLORS_ENABLED = config.get('colorsEnabled');
-const LOG_LEVEL = config.get('logLevel');
+const currentLogLevel = config.get('logLevel');
 
 // Enabling colors if COLORS_ENABLED is set to 1
-if (Number(COLORS_ENABLED) === 1) {
-  colors.enable();
-} else {
+if (Number(COLORS_ENABLED) === 0) {
   colors.disable();
 }
 
 function logger(moduleName) {
-  // Define colors based on the log method
-  const colorMap = {
-    info: colors.blue,
-    warn: colors.yellow,
-    error: colors.red,
-  };
-
   return {
+    // info: works only when `LOG_LEVEL=info`
     info: (...args) => {
-      if (LOG_LEVEL === 'info') {
-        console.log(colorMap.info(`${moduleName}:`), ...args);
+      if (LOG_PRIORITY[currentLogLevel] === LOG_PRIORITY.info) {
+        console.info(COLOR_MAP.info(`${moduleName}:`), ...args);
       }
     },
+    // warn: works when `LOG_LEVEL=info` or `LOG_LEVEL=warn`
     warn: (...args) => {
-      if (LOG_LEVEL === 'info' || LOG_LEVEL === 'warn') {
-        console.warn(colorMap.warn(`${moduleName}:`), ...args);
+      if (LOG_PRIORITY[currentLogLevel] < LOG_PRIORITY.error) {
+        console.warn(COLOR_MAP.warn(`${moduleName}:`), ...args);
       }
     },
+    // error: works always
     error: (...args) => {
-      if (LOG_LEVEL === 'info' || LOG_LEVEL === 'warn' || LOG_LEVEL === 'error') {
-        console.error(colorMap.error(`${moduleName}:`), ...args);
-      }
+      console.error(COLOR_MAP.error(`${moduleName}:`), ...args);
     },
   };
 }
