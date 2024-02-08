@@ -3,7 +3,6 @@ const path = require('path');
 const colors = require('colors/safe');
 const config = require('config');
 const { COLOR_MAP, LOG_PRIORITY } = require('./constants');
-const { createLogMessage } = require('../helpers');
 
 // Reading environment variable values
 const COLORS_ENABLED = config.get('colorsEnabled');
@@ -27,6 +26,10 @@ if (!fs.existsSync(LOGS_DIRECTORY)) {
 // Creating write streams for the log files
 const infoStream = fs.createWriteStream(path.join(INFO_LOG_FILE), { flags: 'a' });
 const errorStream = fs.createWriteStream(path.join(ERROR_LOG_FILE), { flags: 'a' });
+
+function createLogMessage(moduleName, args) {
+  return `${new Date().toISOString()} ${moduleName}: ${args.join(' ')}\n`;
+}
 
 function logger(moduleName) {
   return {
