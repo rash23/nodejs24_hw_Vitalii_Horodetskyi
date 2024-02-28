@@ -1,7 +1,0 @@
-[
-  { "id": 1, "username": "john_doe", "email": "john.doe@example.com" },
-  { "id": 2, "username": "jane_smith", "email": "jane.smith@example.com" },
-  { "id": 3, "username": "mike_jackson", "email": "mike.jackson@example.com" },
-  { "id": 4, "username": "sarah_brown", "email": "sarah.brown@example.com" },
-  { "id": 5, "username": "david_williams", "email": "david.williams@example.com" }
-]

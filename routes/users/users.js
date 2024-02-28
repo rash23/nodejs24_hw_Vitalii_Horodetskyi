@@ -1,65 +1,53 @@
 const router = require('express').Router();
-const fs = require('fs');
+
 const { validateBody, validateUserId } = require('./validators');
 const { HTTP_STATUS_CODES } = require('../../utils/constants');
 
-const USERS_FILE_PATH = './data/users.json';
+const knexLib = require('knex');
 
-let users = [];
-
-try {
-  const userData = fs.readFileSync(USERS_FILE_PATH, 'utf8');
-  users = JSON.parse(userData);
-  console.log('List of users loaded from file:', users);
-} catch (error) {
-  console.error('Error loading list of users from file:', error);
-}
+const knexConfig = require('../../knexfile');
+const knex = knexLib(knexConfig);
 
 // Get all users
-router.get('/', (req, resp) => {
+router.get('/', async (req, resp) => {
+  const users = await knex.select().from('users');
+
   resp.json(users);
 });
 
 // Create a new user
-router.post('/', validateBody, (req, resp) => {
-  const { username, email } = req.body;
-  const newUser = { id: users.length + 1, username, email };
+router.post('/', validateBody, async (req, resp) => {
+  const [user] = await knex('users').insert(req.body).returning('*');
+  console.log('user', user);
 
-  users.push(newUser);
-
-  resp.status(HTTP_STATUS_CODES.CREATED).json(newUser);
+  resp.status(HTTP_STATUS_CODES.CREATED).json(user);
 });
 
 // Get user by ID
-router.get('/:userId', validateUserId, (req, resp) => {
+router.get('/:userId', validateUserId, async (req, resp) => {
   const userId = parseInt(req.params.userId);
 
-  const user = users.find((u) => u.id === userId);
+  const user = await knex.select().from('users').where({ id: userId }).first();
 
   if (!user) {
     return resp.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: 'User not found' });
   }
+
   resp.json(user);
 });
 
 // Delete user by ID
-router.delete('/:userId', validateUserId, (req, resp) => {
+router.delete('/:userId', validateUserId, async (req, resp) => {
   const userId = parseInt(req.params.userId);
 
-  const index = users.findIndex((u) => u.id === userId);
+  // Delete the user from the database
+  const deletedCount = await knex('users').where({ id: userId }).del();
 
-  if (index === -1) {
+  if (deletedCount === 0) {
     return resp.status(HTTP_STATUS_CODES.NOT_FOUND).json({ error: 'User not found' });
   }
 
-  const deletedUser = users.splice(index, 1)[0]; // Remove and get the deleted user
-  resp.status(HTTP_STATUS_CODES.OK).json(deletedUser);
-});
-
-// Save user data to file when the server is stopped
-process.on('SIGINT', () => {
-  fs.writeFileSync(USERS_FILE_PATH, JSON.stringify(users), 'utf8');
-  console.log('User data saved to file:', users);
+  resp.status(HTTP_STATUS_CODES.OK).json({ message: 'User deleted successfully' });
 });
 
 module.exports = {
