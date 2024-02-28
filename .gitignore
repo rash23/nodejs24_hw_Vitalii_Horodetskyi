@@ -131,3 +131,6 @@ dist
 
 #macOS related things
 .DS_Store
+
+# DB files
+*.sqlite3
